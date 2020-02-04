@@ -46,5 +46,7 @@ module.exports = {
     });
   },
 
-  down: () => {},
+  down: queryInterface => {
+    return queryInterface.dropTable('recipients');
+  },
 };
