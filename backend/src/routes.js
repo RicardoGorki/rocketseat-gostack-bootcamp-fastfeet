@@ -25,9 +25,22 @@ routes.post('/recipients', RecipientController.store);
 routes.put('/recipients/:id', RecipientController.update);
 routes.delete('/recipients/:id', RecipientController.delete);
 
-routes.get('/deliveryman', DeliverymanController.index);
-routes.post('/deliveryman', DeliverymanController.store);
-routes.put('/deliveryman/:id', DeliverymanController.update);
-routes.delete('/deliveryman/:id', DeliverymanController.delete);
+routes.get('/delivery', DeliveryController.index);
+routes.post('/delivery', DeliveryController.store);
+routes.put('/delivery/:id', DeliveryController.update);
+routes.delete('/delivery/:id', DeliveryController.delete);
+
+routes.get('/deliverymans', DeliverymanController.index);
+routes.post('/deliverymans', DeliverymanController.store);
+routes.put('/deliverymans/:id', DeliverymanController.update);
+routes.delete('/deliverymans/:id', DeliverymanController.delete);
+
+routes.get('/delivery/:id/problems', DeliveryProblemController.index);
+routes.post('/delivery/:id/problems', DeliveryProblemController.store);
+routes.put('/delivery/:id/problems', DeliveryProblemController.update);
+routes.delete(
+  '/delivery/:id/cancel-delivery',
+  DeliveryProblemController.delete
+);
 
 export default routes;
