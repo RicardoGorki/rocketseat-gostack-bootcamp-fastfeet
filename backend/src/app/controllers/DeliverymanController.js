@@ -4,34 +4,41 @@ import Deliveryman from '../models/Deliveryman';
 
 class DeliverymanController {
   async index(req, res) {
-    const deliveryman = await Deliveryman.findAll({
-      attributes: ['id', 'name', 'avatar_id', 'email'],
+    const deliverymans = await Deliveryman.findAll({
+      attributes: ['id', 'name', 'email', 'avatar_id'],
     });
 
-    return res.json({ deliveryman });
+    return res.json({ deliverymans });
   }
 
   async store(req, res) {
     const schema = Yup.object().shape({
       name: Yup.string().required(),
-      avatar_id: Yup.string().required(),
-      email: Yup.number().required(),
+      avatar_id: Yup.number(),
+      email: Yup.string().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validation fails' });
     }
+    const deliverymanExists = await Deliveryman.findOne({
+      where: { email: req.body.email },
+    });
 
-    const deliveryman = await Deliveryman.create(req.body);
+    if (deliverymanExists) {
+      return res.status(400).json({ error: 'Deliveryman already exists.' });
+    }
 
-    return res.json({ deliveryman });
+    const { id, name, avatar_id, email } = await Deliveryman.create(req.body);
+
+    return res.json({ id, name, avatar_id, email });
   }
 
   async update(req, res) {
     const schema = Yup.object().shape({
       name: Yup.string(),
-      avatar_id: Yup.string(),
-      email: Yup.number(),
+      avatar_id: Yup.number(),
+      email: Yup.string(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -40,19 +47,23 @@ class DeliverymanController {
 
     const deliveryman = await Deliveryman.findByPk(req.params.id);
 
+    if (!deliveryman) {
+      return res.status(401).json({ error: 'Deliveryman does not exists.' });
+    }
+
     await deliveryman.update(req.body);
 
     return res.json({ deliveryman });
   }
 
   async delete(req, res) {
-    const delivery = await Deliveryman.findByPk(req.params.id);
+    const deliveryman = await Deliveryman.findByPk(req.params.id);
 
-    if (!delivery) {
-      return res.status(401).json({ error: 'Recipient do not found.' });
+    if (!deliveryman) {
+      return res.status(401).json({ error: 'Deliveryman do not found.' });
     }
-    delivery.destroy();
-    return res.json({ message: 'Recipient deleted' });
+    deliveryman.destroy();
+    return res.json({ message: 'Deliveryman deleted' });
   }
 }
 
