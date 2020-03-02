@@ -5,7 +5,6 @@ class Deliveryman extends Model {
     super.init(
       {
         name: Sequelize.STRING,
-        avatar_id: Sequelize.VIRTUAL,
         email: Sequelize.STRING,
       },
       {
