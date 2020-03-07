@@ -47,35 +47,35 @@ class DeliveryController {
       return res.status(400).json({ error: 'Deliveryman does not exist' });
     }
 
-    const start_date = startOfDay(new Date());
-
     await Delivery.create({
       recipient_id,
       deliveryman_id,
       product,
-      start_date,
     });
 
     return res.json({
       recipient_id,
       deliveryman_id,
       product,
-      start_date,
     });
   }
 
   async update(req, res) {
     const schema = Yup.object().shape({
-      name: Yup.string(),
-      avatar_id: Yup.string(),
-      email: Yup.number(),
+      recipient_id: Yup.number(),
+      deliveryman_id: Yup.number(),
+      product: Yup.string(),
     });
 
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Validation fails' });
     }
 
-    return res.json({});
+    const deliveries = await Delivery.findByPk(req.params.id);
+
+    await deliveries.update(req.body);
+
+    return res.json({ deliveries });
   }
 
   async delete(req, res) {
