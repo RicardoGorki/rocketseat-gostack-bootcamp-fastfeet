@@ -1,8 +1,9 @@
 import * as Yup from 'yup';
-import { startOfDay, endOfDay } from 'date-fns';
 import Delivery from '../models/Delivery';
 import Recipient from '../models/Recipient';
 import Deliveryman from '../models/Deliveryman';
+import DeliveryMail from '../jobs/DeliveryMail';
+import Queue from '../../lib/Queue';
 
 class DeliveryController {
   async index(req, res) {
@@ -47,17 +48,40 @@ class DeliveryController {
       return res.status(400).json({ error: 'Deliveryman does not exist' });
     }
 
-    await Delivery.create({
+    const delivery = await Delivery.create({
       recipient_id,
       deliveryman_id,
       product,
     });
 
-    return res.json({
-      recipient_id,
-      deliveryman_id,
-      product,
+    const registrationMail = await Delivery.findByPk(delivery.id, {
+      include: [
+        {
+          model: Recipient,
+          as: 'recipient',
+          attributes: [
+            'name',
+            'street',
+            'number',
+            'complement',
+            'state',
+            'city',
+            'postcode',
+          ],
+        },
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+        },
+      ],
     });
+
+    await Queue.add(DeliveryMail.key, {
+      registrationMail,
+    });
+
+    return res.json(delivery);
   }
 
   async update(req, res) {
