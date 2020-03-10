@@ -3,6 +3,7 @@ import Delivery from '../models/Delivery';
 import Recipient from '../models/Recipient';
 import Deliveryman from '../models/Deliveryman';
 import DeliveryMail from '../jobs/DeliveryMail';
+import DeliveryDeletedMail from '../jobs/DeliveryDeletedMail';
 import Queue from '../../lib/Queue';
 
 class DeliveryController {
@@ -97,19 +98,39 @@ class DeliveryController {
 
     const deliveries = await Delivery.findByPk(req.params.id);
 
+    if (!deliveries) {
+      return res.status(400).json({ error: 'Deliveries do not found' });
+    }
+
     await deliveries.update(req.body);
 
     return res.json({ deliveries });
   }
 
   async delete(req, res) {
-    const delivery = await Delivery.findByPk(req.params.id);
+    const delivery = await Delivery.findByPk(req.params.id, {
+      include: [
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+        },
+      ],
+    });
+
+    delivery.destroy();
 
     if (!delivery) {
-      return res.status(401).json({ error: 'Recipient do not found.' });
+      return res.status(401).json({ error: 'Delivery do not found.' });
     }
-    delivery.destroy();
-    return res.json({ message: 'Recipient deleted' });
+
+    const registrationMail = delivery;
+
+    await Queue.add(DeliveryDeletedMail.key, {
+      registrationMail,
+    });
+
+    return res.json({ delivery, message: 'Delivery deleted' });
   }
 }
 
