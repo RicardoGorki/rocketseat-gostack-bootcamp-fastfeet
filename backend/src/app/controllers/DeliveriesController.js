@@ -7,11 +7,11 @@ import {
   setMinutes,
   setHours,
   startOfDay,
+  startOfHour,
   endOfDay,
+  parseISO,
 } from 'date-fns';
 import Delivery from '../models/Delivery';
-import Deliveryman from '../models/Deliveryman';
-import Queue from '../../lib/Queue';
 
 class DeliveryController {
   async index(req, res) {
@@ -42,8 +42,7 @@ class DeliveryController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
-      start_date: Yup.date(),
-      canceled_at: Yup.date(),
+      end_date: Yup.date().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -51,11 +50,19 @@ class DeliveryController {
     }
     const deliveryId = req.params.id;
 
+    const { end_date } = req.body;
+
     const deliveries = await Delivery.findByPk(deliveryId);
 
     const deliveryman = deliveries.deliveryman_id;
 
     const startDate = new Date();
+
+    const endDate = startOfHour(parseISO(end_date));
+
+    if (isBefore(endDate, new Date())) {
+      return res.status(401).json({ error: 'Past dates are not permitted' });
+    }
 
     const dateAfter = setSeconds(setMinutes(setHours(startDate, 8), 0), 0);
     const dateBefore = setSeconds(setMinutes(setHours(startDate, 18), 0), 0);
@@ -86,35 +93,9 @@ class DeliveryController {
         .json({ error: 'Dear deliver, you can only deliver 5 orders per day' });
     }
 
-    await deliveries.update({ start_date: startDate });
+    await deliveries.update({ start_date: startDate, end_date });
 
     return res.json(deliveries);
-  }
-
-  async delete(req, res) {
-    const delivery = await Delivery.findByPk(req.params.id, {
-      include: [
-        {
-          model: Deliveryman,
-          as: 'deliveryman',
-          attributes: ['name', 'email'],
-        },
-      ],
-    });
-
-    delivery.destroy();
-
-    if (!delivery) {
-      return res.status(401).json({ error: 'Delivery do not found.' });
-    }
-
-    const registrationMail = delivery;
-
-    await Queue.add(DeliveryDeletedMail.key, {
-      registrationMail,
-    });
-
-    return res.json({ delivery, message: 'Delivery deleted' });
   }
 }
 
