@@ -16,7 +16,7 @@ export default function RouteWrapper({
   }
 
   if (signed && !isPrivate) {
-    return <Redirect to="/student" />;
+    return <Redirect to="/delivery" />;
   }
 
   const Layout = signed ? Header : Route;
