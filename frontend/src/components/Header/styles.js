@@ -26,17 +26,14 @@ export const Menu = styled.div`
   align-items: left;
   margin-right: auto;
 
-  span {
+  a {
     margin-right: 10px;
     color: #999999;
     font-weight: bold;
+    color: #999999;
 
-    a {
-      color: #999999;
-
-      :focus {
-        color: #444444;
-      }
+    :focus {
+      color: #444444;
     }
   }
 `;

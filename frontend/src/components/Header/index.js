@@ -11,18 +11,10 @@ export default function Header() {
         <img src={logo} alt="fastfeet" />
         <Menu>
           <aside>
-            <span>
-              <Link to="/delivery">ENCOMENDAS</Link>
-            </span>
-            <span>
-              <Link to="/delivery">ENTREGADORES</Link>
-            </span>
-            <span>
-              <Link to="/delivery">DESTINATÁRIOS</Link>
-            </span>
-            <span>
-              <Link to="/delivery">PROBLEMAS</Link>
-            </span>
+            <Link to="/delivery">ENCOMENDAS</Link>
+            <Link to="/delivery">ENTREGADORES</Link>
+            <Link to="/delivery">DESTINATÁRIOS</Link>
+            <Link to="/delivery">PROBLEMAS</Link>
           </aside>
         </Menu>
         <Profile>
